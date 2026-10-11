@@ -44,7 +44,7 @@ onSlotClicked(function(baseStats) {
 		'soundtrack/bgm5.ogg',
 	];
 
-	SoundPlayer.playLooped(tracks[ (enemyBonusMoney - 1) % tracks.length ], 1);
+	SoundPlayer.playLooped(tracks[ (enemyBonusMoney - 1) % tracks.length ], 0.85);
 });
 
 onDifficulty(function(newMoney) {

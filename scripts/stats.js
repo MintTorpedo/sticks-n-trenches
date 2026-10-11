@@ -68,7 +68,7 @@ const UnitStats = {
 	'stormtrooper': {
 		class: ENUM.class.infantry,
 		icon: 'media/icons/stormtrooper.png',
-		deathSound: 'sfx/v2/s_51.ogg',
+		deathSound: 'sfx/v2/d2.ogg',
 
 		health: 35,
 		mobility: 130,
@@ -310,7 +310,7 @@ const UnitStats = {
 	'artillery': {
 		class: ENUM.class.infantry,
 		icon: 'media/icons/artillery.png',
-		deathSound: 'sfx/v2/s_57.ogg',
+		deathSound: 'sfx/v2/d3.ogg',
 
 		health: 30,
 		mobility: 30,
@@ -485,7 +485,7 @@ const DEFAULT_STATS_BASE = {
 
 	price: 0,
 	icon: 'media/icons/rifleman.png',
-	deathSound: 'sfx/v2/s_52.ogg',
+	deathSound: 'sfx/v2/d1.ogg',
 };
 
 const DEFAULT_STATS_ATTACK = {
