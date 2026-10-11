@@ -1,0 +1,155 @@
+.nav {
+	border-top: 1px solid var(--color-secondary-600);
+	border-bottom: 1px solid #000;
+
+	background-color: var(--color-secondary-700);
+	padding-block: 0.5rem;
+}
+
+body {
+	margin: 0;
+}
+
+
+.header {
+	color: var(--color-secondary-100);
+}
+
+.header #money {
+	color: yellow;
+	text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+}
+
+
+section:has(canvas) {
+	background-color: var(--color-secondary-900);
+	
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+#canvas-wrapper {
+	position: relative;
+
+	width: 100%;
+	aspect-ratio: 10/4;
+
+	max-width: 1000px;
+	max-height: 400px;
+}
+
+canvas {
+	position: absolute;
+
+	/* image-rendering: crisp-edges; */
+
+	/* width: fit-content;
+	height: 100%; */
+}
+
+#canv-terrain {
+	background-image: linear-gradient(to bottom, 
+		rgb(83, 123, 204),
+		rgb(15, 22, 37)
+	);
+}
+
+.game-actions button {
+	/* height: 100%; */
+	/* aspect-ratio: 1 / 1; */
+	cursor: pointer;
+	padding-inline: 4px;
+
+	background-color: var(--color-secondary-500);
+	
+	border-top: 1px solid var(--color-secondary-400);
+	border-right: 1px solid var(--color-secondary-400);
+	border-bottom: 1px solid var(--color-secondary-600);
+	border-left: 1px solid var(--color-secondary-600);
+
+	box-sizing: border-box;
+}
+
+.game-actions button:hover {
+	filter: brightness(0.8);
+}
+
+.game-actions button:active {
+	filter: brightness(0.7);
+}
+
+/* .game-inventory {
+	gap: 1.5rem;
+} */
+
+.game-inventory div {
+	position: relative;
+	/* overflow: hidden; */
+
+	height: 64px;
+	aspect-ratio: 1/1;
+
+	/* border: 1px solid var(--color-secondary-900); */
+	background-color: var(--color-secondary-800);
+	border-radius: 0.25rem;
+
+	cursor: pointer;
+
+	background-image: url('media/icon.png');
+	background-size: cover;
+	background-position: center;
+	background-repeat: no-repeat;
+
+	transition: 0.1s filter;
+}
+
+.game-inventory > div.expensive {
+	filter: brightness(0.2);
+	cursor: auto;
+}
+
+.game-inventory div::after {
+	content: '';
+	position: absolute;
+
+	width: 68px;
+	height: 68px;
+
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+
+	background-image: url('media/border.png');
+	image-rendering: pixelated;
+	background-size: cover;
+	background-position: center;
+	background-repeat: no-repeat;
+}
+
+.game-inventory div:not(.expensive):hover {
+	filter: brightness(0.8);
+}
+
+.game-inventory div > * {
+	position: absolute;
+}
+
+.game-inventory img {
+	height: calc(100% - 8px);
+	left: 4px;
+	bottom: 0;
+}
+
+.game-inventory span {
+	bottom: 1px;
+	right: 2px;
+
+	background-color: #000;
+	padding-left: 2px;
+	padding-bottom: 1px;
+
+	font-weight: bold;
+	color: #dc0;
+	text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+}

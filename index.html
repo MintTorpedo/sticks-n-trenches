@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="style.css">
+	<link rel="stylesheet" href="var.css">
+
+	<title>Trench</title>
+</head>
+<body>
+	<h1 class="page-padding">Trench Warfare V2</h1>
+	<section class="header nav page-padding flex-row">
+		<div class="grow">
+			<span>difficulty:</span>
+			<select name="difficulty" id="difficulty">
+				<option value="1">easy</option>
+				<option value="2">medium</option>
+				<option value="3">hard</option>
+				<option value="5">very hard</option>
+				<option value="7">extreme</option>
+			</select>
+		</div>
+		<div>
+			
+			<span>Money: <b id="money">100$</b></span>
+		</div>
+	</section>
+
+	<section>
+		<div id="canvas-wrapper">
+			<canvas id="canv-terrain"></canvas>
+			<canvas id="canv-main"></canvas>
+		</div>
+	</section>
+
+	<section class="nav-bottom nav page-padding flex-row">
+		<div id="inventory" class="game-inventory flex-row gap-2">
+
+		</div>
+
+		<div class="game-actions flex-row grow justify-end gap-1 items-stretch">
+			<button class="btn-direction" value="-1">Backwards</button>
+			<button class="btn-direction" value="1">Forward</button>
+		</div>
+	</section>
+
+	<script src="scripts/enum.js"></script>
+	<script src="scripts/config.js"></script>
+	<script src="scripts/spritesheets.js"></script>
+	<script src="scripts/stats.js"></script>
+	<script src="scripts/terrain.js"></script>
+
+	<script src="scripts/classes/cEvent.js"></script>
+	<script src="scripts/classes/cImageAsset.js"></script>
+	<script src="scripts/classes/cTilemap.js"></script>
+
+	<script src="scripts/canvas.js"></script>
+	<script src="scripts/timer.js"></script>
+	<script src="scripts/sound.js"></script>
+	<script src="scripts/animations.js"></script>
+
+	<script src="scripts/projectiles.js"></script>
+	<script src="scripts/strokes.js"></script>
+
+	<script src="scripts/entityAnimation.js"></script>
+	<script src="scripts/vfxAnimation.js"></script>
+	<script src="scripts/targeting.js"></script>
+	<script src="scripts/classes/cEntity.js"></script>
+	<script src="scripts/classes/cEntityManager.js"></script>
+
+	<script src="scripts/team.js"></script>
+	<script src="scripts/camera.js"></script>
+	<script src="scripts/map.js"></script>
+
+	<script src="scripts/init.js"></script>
+
+	<script src="scripts/slots.js" type="module"></script>
+
+	<script src="scripts/main.js" type="module"></script>
+</body>
+</html>

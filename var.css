@@ -1,0 +1,79 @@
+:root {
+	--color-secondary-100: #e6e6e6;
+	--color-secondary-200: #cccccc;
+	--color-secondary-300: #b3b3b3;
+	--color-secondary-400: #999999;
+	--color-secondary-500: #808080;
+	--color-secondary-600: #666666;
+	--color-secondary-700: #4d4d4d;
+	--color-secondary-800: #333333;
+	--color-secondary-900: #1a1a1a;
+
+	--page-padding: 10vw;
+}
+
+html {
+	margin: 0;
+	padding: 0;
+
+	background-color: var(--color-secondary-800);
+	color: var(--color-secondary-100);
+
+	font-family: "win-bug-omega", system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+}
+
+.page-padding {
+	padding-inline: var(--page-padding);
+}
+
+
+button {
+  all: unset;
+}
+
+button:focus {
+  outline: revert;
+}
+
+button:hover {
+	filter: brightness(0.8);
+}
+
+button:active {
+	filter: brightness(0.7);
+}
+
+
+.flex-row {
+	display: flex;
+	flex-direction: row;
+}
+
+.flex-col {
+	display: flex;
+	flex-direction: column;
+}
+
+.grow {
+	flex-grow: 1;
+}
+
+.items-stretch {
+	align-items: stretch;
+}
+
+.justify-end {
+	justify-content: flex-end;
+}
+
+.justify-center {
+	justify-content: center;
+}
+
+.gap-1 {
+	gap: 0.75rem;
+}
+
+.gap-2 {
+	gap: 1.5rem;
+}
