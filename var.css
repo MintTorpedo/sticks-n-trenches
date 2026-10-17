@@ -9,7 +9,7 @@
 	--color-secondary-800: #333333;
 	--color-secondary-900: #1a1a1a;
 
-	--page-padding: 10vw;
+	--page-padding: 5vw;
 }
 
 html {
@@ -24,6 +24,10 @@ html {
 
 .page-padding {
 	padding-inline: var(--page-padding);
+}
+
+.hidden {
+	display: none !important;
 }
 
 
@@ -60,6 +64,10 @@ button:active {
 
 .items-stretch {
 	align-items: stretch;
+}
+
+.items-center {
+	align-items: center;
 }
 
 .justify-end {

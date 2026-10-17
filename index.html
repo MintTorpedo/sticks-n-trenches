@@ -9,20 +9,22 @@
 	<title>Trench</title>
 </head>
 <body>
-	<h1 class="page-padding">Trench Warfare V2</h1>
+	<h1 class="page-padding">Sticks n trenches</h1>
 	<section class="header nav page-padding flex-row">
 		<div class="grow">
-			<span>difficulty:</span>
-			<select name="difficulty" id="difficulty">
-				<option value="1">easy</option>
-				<option value="2">medium</option>
-				<option value="3">hard</option>
-				<option value="5">very hard</option>
-				<option value="7">extreme</option>
+			<span class="hidden">difficulty:</span>
+			<select name="difficulty" id="difficulty" class="hidden">
+				<option value="0">normal</option>
+				<option value="1">hard</option>
+				<option value="2">tryhard</option>
+				<option value="3">impossible</option>
 			</select>
+
+			<span>level:</span>
+			<select name="levels" id="levels"></select>
 		</div>
+
 		<div>
-			
 			<span>Money: <b id="money">100$</b></span>
 		</div>
 	</section>
@@ -31,6 +33,10 @@
 		<div id="canvas-wrapper">
 			<canvas id="canv-terrain"></canvas>
 			<canvas id="canv-main"></canvas>
+			<div class="winscreen flex-col justify-center items-center hidden" id="winscreen">
+				<h2>Victory !</h2>
+				<button id="level-continue">Continue</button>
+			</div>
 		</div>
 	</section>
 
@@ -45,38 +51,41 @@
 		</div>
 	</section>
 
-	<script src="scripts/enum.js"></script>
-	<script src="scripts/config.js"></script>
-	<script src="scripts/spritesheets.js"></script>
-	<script src="scripts/stats.js"></script>
-	<script src="scripts/terrain.js"></script>
+	<script src="scripts/helper/targeting.js"></script>
+	<script src="scripts/helper/formatdata.js"></script>
 
-	<script src="scripts/classes/cEvent.js"></script>
-	<script src="scripts/classes/cImageAsset.js"></script>
-	<script src="scripts/classes/cTilemap.js"></script>
+	<script src="scripts/data/enum.js"></script>
+	<script src="scripts/data/config.js"></script>
+	<script src="scripts/data/spritesheets.js"></script>
+	<script src="scripts/data/stats.js"></script>
+	<script src="scripts/data/terrain.js"></script>
+	<script src="scripts/data/levels.js"></script>
 
-	<script src="scripts/canvas.js"></script>
-	<script src="scripts/timer.js"></script>
-	<script src="scripts/sound.js"></script>
-	<script src="scripts/animations.js"></script>
+	<script src="scripts/core/canvas.js"></script>
+	<script src="scripts/core/gameLoop.js"></script>
 
-	<script src="scripts/projectiles.js"></script>
-	<script src="scripts/strokes.js"></script>
+	<script src="scripts/utility/cEvent.js"></script>
+	<script src="scripts/utility/cImageAsset.js"></script>
+	<script src="scripts/utility/cTimer.js"></script>
+	<script src="scripts/utility/sound.js"></script>
+	<script src="scripts/utility/soundtrack.js"></script>
 
-	<script src="scripts/entityAnimation.js"></script>
-	<script src="scripts/vfxAnimation.js"></script>
-	<script src="scripts/targeting.js"></script>
-	<script src="scripts/classes/cEntity.js"></script>
-	<script src="scripts/classes/cEntityManager.js"></script>
+	<script src="scripts/engine/camera.js"></script>
+	<script src="scripts/engine/cProjectileManager.js"></script>
+	<script src="scripts/engine/cStrokeManager.js"></script>
+	<script src="scripts/engine/cTilemap.js"></script>
 
-	<script src="scripts/team.js"></script>
-	<script src="scripts/camera.js"></script>
-	<script src="scripts/map.js"></script>
+	<script src="scripts/sprite/animations.js"></script>
+	<script src="scripts/sprite/cAnimationController.js"></script>
+	<script src="scripts/sprite/cVFX.js"></script>
 
-	<script src="scripts/init.js"></script>
+	<script src="scripts/session/cEntity.js"></script>
+	<script src="scripts/session/cEntityManager.js"></script>
+	<script src="scripts/session/cTeamManager.js"></script>
+	<script src="scripts/session/cMap.js"></script>
+	<script src="scripts/session/cGameSession.js"></script>
 
 	<script src="scripts/slots.js" type="module"></script>
-
 	<script src="scripts/main.js" type="module"></script>
 </body>
 </html>
