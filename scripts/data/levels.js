@@ -136,7 +136,7 @@ const LEVELS = [
 		title: 'Entrenched',
 		theme: 'default',
 		map: [0, 0, 0, 1, 0, 1, 0, 0, 0, 2, 0, 0, 2, 1, 0, 0, 2, 0, 0, 0, 1, 0, 0, 0],
-		soundtrack: 'track3',
+		soundtrack: 'track4',
 
 		player: {
 			money: 100,
@@ -201,7 +201,7 @@ const LEVELS = [
 		title: 'Test',
 		theme: 'default',
 		map: [3, 3, 3, 3, 0, 1, 0, 0, 1, 3, 3, 3, 3, 1, 1, 0, 0, 0, 2, 0, 0, 1, 0, 0, 2, 0, 0, 1, 0, 2, 2, 2, 2, 0, 1, 0, 0, 1, 0, 3, 3, 3, 3],
-		soundtrack: 'track4',
+		soundtrack: 'track3',
 
 		player: {
 			money: 170,
