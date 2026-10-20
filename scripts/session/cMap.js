@@ -151,6 +151,20 @@ class CMap {
 		}
 	}
 
+	getNthTrenchPosition(trenchNth) {
+		let trenchCount = 0;
+
+		for (let x = 1; x < this.tiles.length; x++) {
+			const terrainId = this.tiles[x];
+			if ( terrainId !== ENUM.terrain.trench ) continue;
+
+			trenchCount++;
+			if ( trenchCount !== trenchNth ) continue;
+
+			return x;
+		}
+	}
+
 	drawEntityDots(ctx) {
 		const mapWidth = this.terrainMap.width;
 		const miniWidth = this.miniMap.width;

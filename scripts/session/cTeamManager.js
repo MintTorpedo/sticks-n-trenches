@@ -16,39 +16,66 @@ class CPlayer {
 		this.stopAtTrenchX = 0;
 		this.flag = null;
 
-		this.currentTrenchX = 0;
+		this.trenchFrontlineX = null;
 		this.trenchCount = 0;
 
 		this.color = '#fff';
+
 		this._event = new CEvent();
 	}
 
-	reportTrenchCapture(x) {
-		if ( this.currentTrenchX === x ) return;
-		this.currentTrenchX = x;
+	_setTrench(trenchX) {
+		if ( this.trenchFrontlineX === trenchX ) return;
+		this.trenchFrontlineX = trenchX;
 
-		const count = this._gameMap.countTrenches(this.currentTrenchX, this.direction);
+		let count = 0;
+		if ( trenchX ) {
+			count = this._gameMap.countTrenches(trenchX, this.direction);
+		}
+
 		this.trenchCount = count;
+		// console.log('Trench captured:', count);
+	}
 
-		console.log('trench count:', count);
+	captureTrench(trenchX) {
+		const currentX = this.trenchFrontlineX;
+		if ( currentX ) {
+			if ( Math.sign(trenchX - currentX) !== this.direction ) return;
+		}
+
+		this._setTrench(trenchX);
+		this._event.emit('trench_captured', trenchX);
+	}
+
+	removeTrench(lostTrenchX) {
+		if ( !this.trenchFrontlineX ) return;
+		if ( lostTrenchX !== this.trenchFrontlineX ) return;
+
+		const fallbackTrenchX = this._gameMap.getNextTrenchPosition(lostTrenchX, this.direction * -1);
+		this._setTrench(fallbackTrenchX);
+
+		this._event.emit('trench_lost', lostTrenchX);
 	}
 
 	moveTrenchLine(givenDirection = 1) {
 		const direction = this.direction * givenDirection
-		const x = this._gameMap.getNextTrenchPosition(this.stopAtTrenchX, direction);
-		if ( !x ) return;
+		const trenchX = this._gameMap.getNextTrenchPosition(this.stopAtTrenchX, direction);
+		if ( !trenchX ) return;
 
 		// console.log('Previous trench line:', this.stopAtTrenchX);
 		// console.log('New trench position:', x);
 
-		if ( x === this.stopAtTrenchX ) return;
-		this.stopAtTrenchX = x;
+		if ( trenchX === this.stopAtTrenchX ) return;
+
+		const prevTrenchX = this.stopAtTrenchX;
+		this.stopAtTrenchX = trenchX;
 
 		this._entityManager.iterateByPlayer(this, entity => {
 			if (entity.passenger) {
 				entity.refreshTrenchDestination();
 			}
 
+			//if ( Math.sign(trenchX - prevTrenchX) !== this.direction ) return;
 			entity.exitTrench();
 		});
 
@@ -120,6 +147,10 @@ class CPlayer {
 	on(eventName, callback) {
 		this._event.on(eventName, callback);
 	}
+
+	once(eventName, callback) {
+		this._event.once(eventName, callback);
+	}
 }
 
 class CTeamManager {
@@ -135,9 +166,15 @@ class CTeamManager {
 		const player = new CPlayer(this._game, playerId, direction);
 		player.moveTrenchLine();
 
-		this.players.push(player);
+		player.on('trench_captured', (trenchX) => {
+			this.players.forEach(targetPlayer => {
+				if ( targetPlayer === player ) return;
+				targetPlayer.removeTrench(trenchX);
+			});
+		});
 
-		return player
+		this.players.push(player);
+		return player;
 	}
 }
 

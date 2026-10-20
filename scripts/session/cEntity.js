@@ -253,32 +253,7 @@ class CEntity {
 	_concludeAttack() {
 		let nextAction = this.isInTrench ? 'idle' : 'move';
 		this.setAction(nextAction);
-
-		// for (let i = 0; i < this.attacks.length; i++) {
-		// 	this.attacks[i].cooldown = 0;
-		// }
 	}
-
-	// _assignNewTarget(attack) {
-	// 	attack = attack ?? this.attacks[0];
-
-	// 	const prevTarget = attack.target;
-	// 	if ( prevTarget && !prevTarget.isDead ) return;
-
-	// 	const target = this._findNewTarget(attack);
-	// 	attack.target = target;
-
-	// 	if ( !target ) {
-	// 		if ( this.action === ENUM.action.attack ) {
-	// 			this._concludeAttack();
-	// 		}
-
-	// 		return;
-	// 	}
-
-	// 	if ( this.action === ENUM.action.attack) return;
-	// 	this._attack(target, attack);
-	// }
 
 	_assignNewTarget() {
 		for (let i = 0; i < this.attacks.length; i++) {
@@ -287,7 +262,6 @@ class CEntity {
 
 			if ( !this._hasValidTarget(attack) ) {
 				attack.target = null;
-				//continue;
 			}
 
 			const target = this._findNewTarget(attack);
@@ -430,9 +404,21 @@ class CEntity {
 		}
 	}
 
+	_canExitTrench() {
+		const tx = this.tileMidX;
+
+		const trenchX = this.player.stopAtTrenchX;
+		const direction = Math.sign(tx - trenchX);
+		if ( direction === 0 ) return false;
+
+		return direction !== this.player.direction;
+	}
+
 	exitTrench() {
 		if ( !this.isInTrench ) return;
 		if ( this.isDead ) return;
+
+		if ( !this._canExitTrench() ) return;
 
 		//this.y += 12;
 
@@ -443,36 +429,43 @@ class CEntity {
 		}
 	}
 
-	_enterTrench(tx) {
+	_enterTrench() {
 		if ( !this.isInfantry ) return;
-		if ( this.player.stopAtTrenchX !== tx ) return;
-
-		//const terrain = GameMap.getTerrainAt(tx);
 		if ( this.terrain.id !== ENUM.terrain.trench ) return;
+
+		if ( this._canExitTrench() ) return;
+
 		//this.y = -12;
 		this.isInTrench = true;
 		this.setAction('idle');
-		
-		this.player.reportTrenchCapture(tx);
 	}
 
 	getDistanceFromTrench() {
 		return Math.abs(this.player.stopAtTrenchX * TILE_WIDTH - this.x)
 	}
 
+	_enterTile(tx) {
+		this.tileX = tx;
+
+		const terrain = this._map.getTerrainAt(tx);
+		if ( !terrain ) return;
+
+		this.terrain = terrain;
+		this.speedModifier = this.terrain.speed[ this.stats.class ];
+
+		if ( terrain.id === ENUM.terrain.trench ) {
+			this.player.captureTrench(tx);
+		}
+	}
+
 	_updateMove(dt) {
 		let direction = this.player.direction;
 		this.x += dt * this.mobility * this.speedModifier * direction;
 
-		// const x = this.x;
-		// if (x >= GameMap.width || x <= -150) {
-		// 	this._resetPosition();
-		// }
-
 		const mtx = Math.floor((this.x - TILE_WIDTH / 2 * direction) / TILE_WIDTH);
 		if ( mtx !== this.tileMidX ) {
-			this._enterTrench(mtx);
 			this.tileMidX = mtx;
+			this._enterTrench(mtx);
 		}
 
 		let tx = this.x / TILE_WIDTH;
@@ -488,13 +481,7 @@ class CEntity {
 			return;
 		}
 
-		this.tileX = tx;
-
-		const terrain = this._map.getTerrainAt(tx);
-		if ( !terrain ) return;
-
-		this.terrain = terrain;
-		this.speedModifier = this.terrain.speed[ this.stats.class ];
+		this._enterTile(tx);
 	}
 
 	_scanTargets(dt) {

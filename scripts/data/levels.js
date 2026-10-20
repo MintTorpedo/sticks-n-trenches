@@ -156,31 +156,33 @@ const LEVELS = [
 		timed: [
 			{
 				//seconds: 30,
-				spawn: [
-					'rifleman', 'rifleman', 'rifleman', 'rifleman',
-					'sniper', 'sniper', 'sniper', 'sniper',
-				],
+				spawn: {
+					entities: [
+						'rifleman', 'rifleman', 'rifleman', 'rifleman',
+						'sniper', 'sniper', 'sniper', 'sniper',
+					],
+					team: 'enemy',
 
-				team: 'enemy',
-
-				traits: {
-					tileX: 12,
-					mobility: 0,
+					traits: {
+						tileX: 12,
+						mobility: 0,
+					}
 				}
 			},
 
 			{
 				//seconds: 30,
-				spawn: [
-					'rifleman', 'rifleman', 'rifleman', 'rifleman',
-					'sniper', 'sniper', 'sniper', 'sniper',
-				],
+				spawn: {
+					entities: [
+						'rifleman', 'rifleman', 'rifleman', 'rifleman',
+						'sniper', 'sniper', 'sniper', 'sniper',
+					],
 
-				team: 'enemy',
-
-				traits: {
-					tileX: 21,
-					mobility: 0,
+					team: 'enemy',
+					traits: {
+						tileX: 21,
+						mobility: 0,
+					}
 				}
 			},
 		],
@@ -204,7 +206,7 @@ const LEVELS = [
 		soundtrack: 'track4',
 
 		player: {
-			money: 170,
+			money: 100,
 			income: 1,
 
 			loadout: ['rifleman', 'sniper', 'gunner', 'artillery', 'transport truck', 'armored car', 'tank', 'assault gun'],
@@ -214,9 +216,37 @@ const LEVELS = [
 			money: -20,
 
 			income: 0,
-			incomeFixed: 12,
+			incomeFixed: 10,
 			loadout: ['stormtrooper', 'grenadier', 'sniper', 'gunner', 'artillery', 'transport truck', 'armored car', 'assault gun'],
 		},
+
+		events: [
+			{
+				eventName: 'trench_captured',
+				eventTarget: 'player',
+				eventValue: 7,
+
+				spawn: {
+					entities: ['grenadier', 'grenadier', 'grenadier', 'grenadier', 'grenadier', 'tank'],
+					team: 'enemy',
+
+					traits: {}
+				}
+			},
+
+			{
+				eventName: 'trench_captured',
+				eventTarget: 'player',
+				eventValue: 6,
+
+				spawn: {
+					entities: ['grenadier', 'grenadier', 'grenadier', 'grenadier'],
+					team: 'enemy',
+
+					traits: {}
+				}
+			},
+		],
 
 		// timed: [
 		// 	{
@@ -231,22 +261,26 @@ const LEVELS = [
 		interval: [
 			{
 				seconds: 100,
-				spawn: ['tank'],
 
-				team: 'enemy',
+				spawn: {
+					entities: ['tank'],
+					team: 'enemy',
+				},
 			}
 		],
 	},
 ];
 
 const DEFAULT_LEVEL_BASE = {
-	interval: [],
-	timed: [],
 	theme: 'default',
 	soundtrack: 'track1',
 
 	player: {},
 	enemy: {},
+
+	interval: [],
+	timed: [],
+	events: [],
 };
 
 const DEFAULT_LEVEL_PLAYER = {
@@ -255,21 +289,37 @@ const DEFAULT_LEVEL_PLAYER = {
 	loadout: [],
 };
 
-const DEFAULT_LEVEL_EVENT = {
+const DEFAULT_EVENT_TIME = {
 	seconds: 0,
+};
+
+const DEFAULT_SPAWN_INFO = {
+	entities: [],
 	team: 'enemy',
-	traits: {}
+	traits: {},
 };
 
 // Format level data
 (() => {
+	const FillEvent = (eventInfo) => {
+		if ( eventInfo.spawn ) {
+			FillMissingProperties(eventInfo.spawn, DEFAULT_SPAWN_INFO);
+		}
+	};
+
+	const FillTimedEvent = (eventInfo) => {
+		FillMissingProperties(eventInfo, DEFAULT_EVENT_TIME);
+		FillEvent(eventInfo);
+	};
+
 	LEVELS.forEach(level => {
 		FillMissingProperties(level, DEFAULT_LEVEL_BASE);
 
 		FillMissingProperties(level.player, DEFAULT_LEVEL_PLAYER);
 		FillMissingProperties(level.enemy, DEFAULT_LEVEL_PLAYER);
 
-		level.interval.forEach(event => FillMissingProperties(event, DEFAULT_LEVEL_EVENT) );
-		level.timed.forEach(event => FillMissingProperties(event, DEFAULT_LEVEL_EVENT) );
+		level.interval.forEach(FillTimedEvent);
+		level.timed.forEach(FillTimedEvent);
+		level.events.forEach(FillEvent);
 	});
 })();

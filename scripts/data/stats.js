@@ -166,14 +166,16 @@ const UNIT_STATS = {
 
 			{
 				damage: 20,
+				penetration: -12,
+
 				range: 600,
-				cooldown: 16,
+				cooldown: 20,
 				damageType: ENUM.damageType.explosive,
 				targeting: ENUM.targeting.farthest,
 
 				splashRadius: 20,
 				missRadius: 150,
-				failureRate: 0.8,
+				failureRate: 0.5,
 
 				animation: 'attack2',
 				fireOnKeyframe: 'fire',

@@ -97,18 +97,20 @@ class CGameSession {
 		enemy.setIncome(enemyData.income, enemyData.incomeFixed);
 		enemy.setLoadout(enemyData.loadout);
 
-		const processEvent = eventData => {
+		this.map.import(data.map);
+
+		const processSpawn = (spawnInfo) => {
 			let targetPlayer = this.enemy;
-			if ( eventData.team === 'player' ) {
+			if ( spawnInfo.team === 'player' ) {
 				targetPlayer = this.player;
 			}
 
-			const tileX = eventData.traits.tileX;
-			const mobility = eventData.traits.mobility;
+			const tileX = spawnInfo.traits.tileX;
+			const mobility = spawnInfo.traits.mobility;
 
-			//console.log('event data:', eventData);
+			//console.log('spawn data:', spawnInfo);
 
-			eventData.spawn.forEach(unitName => {
+			spawnInfo.entities.forEach(unitName => {
 				const entity = targetPlayer.createEntity(unitName);
 				if ( tileX !== undefined ) {
 					entity.setPosition( tileX * TILE_WIDTH - TILE_WIDTH / 2 );
@@ -122,12 +124,44 @@ class CGameSession {
 			});
 		}
 
-		data.interval.forEach(eventData => {
-			this.timer.interval(eventData.seconds, () => processEvent(eventData));
+		const processEvent = (eventData) => {
+			if ( eventData.spawn ) {
+				processSpawn(eventData.spawn);
+			}
+		}
+
+		data.interval.forEach(eventInfo => {
+			console.log('HELLO???')
+			this.timer.interval(eventInfo.seconds, () => processEvent(eventInfo));
 		});
 
-		data.timed.forEach(eventData => {
-			this.timer.await(eventData.seconds, () => processEvent(eventData));
+		data.timed.forEach(eventInfo => {
+			this.timer.await(eventInfo.seconds, () => processEvent(eventInfo));
+		});
+
+		data.events.forEach(eventInfo => {
+			const targetPlayer = player;
+			if ( eventInfo.eventTarget === 'enemy') {
+				targetPlayer = enemy;
+			}
+
+			let targetValue = eventInfo.eventValue;
+			if ( eventInfo.eventName === 'trench_captured' ) {
+				targetValue = this.map.getNthTrenchPosition(targetValue);
+
+				console.log('Trench x:', targetValue);
+			}
+
+			targetPlayer.on(eventInfo.eventName, (value) => {
+				if ( targetValue !== undefined ) {
+					if ( targetValue !== value ) return;
+				}
+
+				processEvent(eventInfo);
+				console.log(eventInfo.eventName);
+				
+				return true;
+			});
 		});
 
 		this.timer.interval(1, () => {
@@ -160,7 +194,6 @@ class CGameSession {
 			}
 		});
 
-		this.map.import(data.map);
 		this.gameState = ENUM.gameState.running;
 
 		const playerHQ = player.createHQ();
