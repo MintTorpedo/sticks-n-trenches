@@ -54,14 +54,16 @@ class CGameSession {
 	}
 
 	inputPurchase(baseStats) {
-		if ( this.gameState !== ENUM.gameState.running ) return;
+		if ( this.gameState !== ENUM.gameState.running ) return false;
 
 		const player = this.player;
 		const entity = player.produceEntity(baseStats.name);
-		if ( !entity ) return;
+		if ( !entity ) return false;
 
 		let purchaseSound = baseStats.purchaseSound ?? 'sfx/fx_menu.wav';
 		SoundPlayer.play(purchaseSound, 0.5);
+
+		return true;
 	}
 
 	inputDifficulty(difficultyLevel) {
@@ -115,6 +117,8 @@ class CGameSession {
 				if ( mobility !== undefined ) { // Curse me..
 					entity.setMobility(mobility);
 				}
+
+				console.log(entity);
 			});
 		}
 
@@ -126,25 +130,32 @@ class CGameSession {
 			this.timer.await(eventData.seconds, () => processEvent(eventData));
 		});
 
-		this.timer.interval(0.6, () => {
+		this.timer.interval(1, () => {
 			player.generateIncome();
 			enemy.generateIncome();
 		});
 
 		// Note: the code below will eventually be moved into its own AI class
-		this.timer.interval(1, () => {
-			if ( Math.random() <= 0.05 ) {
+		this.timer.interval(2, () => {
+			if ( Math.random() <= 0.1 ) {
 				enemy.moveTrenchLine( Math.random() <= 0.2 ? -1 : 1 );
 			}
+
+			if ( Math.random() < 0.5 ) return;
 
 			const loadout = enemy.loadout;
 
 			while (true) {
 				if ( Math.random() < 0.25 ) break;
-				const diceRoll = Math.floor(Math.random() * loadout.length);
-				const unitName = loadout[diceRoll];
 
-				const entity = enemy.produceEntity(unitName);
+				const baseStats = loadout.getRandomAvailable();
+				if ( !baseStats ) {
+					if ( Math.random() < 0.3 ) break;
+
+					continue;
+				};
+
+				const entity = enemy.produceEntity(baseStats.name);
 				if ( !entity ) break;
 			}
 		});

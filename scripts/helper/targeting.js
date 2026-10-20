@@ -42,7 +42,7 @@ function targetFarthestTrench(_, entities) {
 
 	for (let i = 0; i < entities.length; i++) {
 		const entity = entities[i];
-		const dist = entity.getTrenchDistance() / entity.mobility;
+		const dist = entity.getDistanceFromTrench() / entity.mobility;
 		if (dist < farthestDist) continue;
 
 		farthestDist = dist;

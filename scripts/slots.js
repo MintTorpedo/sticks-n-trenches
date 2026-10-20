@@ -10,6 +10,8 @@ LEVELS.forEach((levelData, levelId) => {
 	levelDropdown.appendChild(option);
 });
 
+levelDropdown.value = "5";
+
 const callbacks = [];
 function FireClickEvent(unitName) {
 	callbacks.forEach(callback => {
@@ -27,14 +29,15 @@ export function generateSlots(loadout) {
 	slots = [];
 
 	const container = document.querySelector('#inventory');
-	for (const unitName in UnitStats) {
-		const baseStats = UnitStats[unitName];
+
+	for (const unitName in UNIT_STATS) {
+		const baseStats = UNIT_STATS[unitName];
 		if ( baseStats.class === ENUM.class.building ) continue;
 
 		const element = document.createElement('div');
 		element.value = unitName;
 
-		const isOwned = loadout.includes(baseStats.name);
+		const isOwned = !!loadout.get(baseStats.name);
 		if ( !isOwned ) {
 			element.classList.add('locked');
 		}
@@ -42,8 +45,12 @@ export function generateSlots(loadout) {
 		element.innerHTML = `
 			<img src="${baseStats.icon}">
 			<span>${baseStats.price}$</span>
+			<div class="expensive overlay"></div>
+			<div class="cooldown overlay" style="animation-duration: ${baseStats.cooldown}s" ></div>
 			<img src="media/border.png" class="border ${isOwned ? '' : 'hidden'}">
 			<img src="media/border-locked.png" class="border ${isOwned ? 'hidden' : ''}">
+
+			<div class="tooltip">${baseStats.name}</div>
 		`;
 
 		element.addEventListener('click', () => {
@@ -72,6 +79,14 @@ export function generateSlots(loadout) {
 		}
 		container.appendChild(slot.element);
 	});
+}
+
+export function slotApplyCooldown(unitName) {
+	const targetSlot = slots.find(slot => slot.stats.name === unitName);
+	if ( !targetSlot ) return;
+
+	const element = targetSlot.element.querySelector('.cooldown');
+	element.getAnimations().forEach(a => { a.cancel(); a.play(); });
 }
 
 export function onDirectionClicked(callback) {

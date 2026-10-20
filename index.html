@@ -13,7 +13,7 @@
 	<section class="header nav page-padding flex-row">
 		<div class="grow">
 			<span class="hidden">difficulty:</span>
-			<select name="difficulty" id="difficulty" class="hidden">
+			<select class="hidden" name="difficulty" id="difficulty">
 				<option value="0">normal</option>
 				<option value="1">hard</option>
 				<option value="2">tryhard</option>
@@ -21,7 +21,7 @@
 			</select>
 
 			<span>level:</span>
-			<select name="levels" id="levels"></select>
+			<select name="levels" id="levels" value="6"></select>
 		</div>
 
 		<div>
@@ -74,6 +74,7 @@
 	<script src="scripts/engine/cProjectileManager.js"></script>
 	<script src="scripts/engine/cStrokeManager.js"></script>
 	<script src="scripts/engine/cTilemap.js"></script>
+	<script src="scripts/engine/cLoadout.js"></script>
 
 	<script src="scripts/sprite/animations.js"></script>
 	<script src="scripts/sprite/cAnimationController.js"></script>

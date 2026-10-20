@@ -1,4 +1,4 @@
-const UnitStats = {
+const UNIT_STATS = {
 	'hq': {
 		class: ENUM.class.building,
 		icon: 'media/hq.png',
@@ -35,7 +35,7 @@ const UnitStats = {
 
 		health: 30,
 		mobility: 70,
-		price: 20,
+		price: 25,
 
 		spritesheets: {
 			move: {
@@ -87,12 +87,116 @@ const UnitStats = {
 			fireOnKeyframe: 'fire',
 
 			sound: 'sfx/v2/rifle.mp3',
-
-			// effect: {
-			// 	type: 'stroke',
-			// 	offset: [39, 40],
-			// },
 		},
+	},
+
+	'grenadier': {
+		class: ENUM.class.infantry,
+		icon: 'media/icons/riflegren.png',
+
+		health: 30,
+		mobility: 100,
+		price: 35,
+
+		spritesheets: {
+			move: {
+				path: 'media/spritesheets/riflegren/move.png',
+				size: [3, 3],
+				frames: 9,
+
+				offset: [12, 0],
+			},
+
+			idle: {
+				path: 'media/spritesheets/riflegren/idle.png',
+				size: [4, 3],
+				frames: 12,
+
+				offset: [12, 0],
+			},
+			
+			attack: {
+				path: 'media/spritesheets/riflegren/attack.png',
+				size: [5, 5],
+				frames: 21,
+
+				offset: [12 + 8, 0],
+
+				keyframes: {
+					6: 'fire',
+				},
+			},
+
+			attack2: {
+				path: 'media/spritesheets/riflegren/attack2.png',
+				size: [11, 10],
+				frames: 108,
+
+				offset: [12 + 4, -2],
+
+				keyframes: {
+					44: 'fire',
+					89: 'fire',
+				},
+			},
+
+			death: {
+				path: 'media/spritesheets/riflegren/death.png',
+				size: [5, 5],
+				frames: 23,
+
+				offset: [12 - 59, 0]
+			},
+		},
+
+		deathOffset: [-75, 0],
+
+		attacks: [
+			{
+				damage: 8,
+				range: 300,
+				cooldown: 2,
+				damageType: ENUM.damageType.piercing,
+
+				spriteAction: 'attack',
+				fireOnKeyframe: 'fire',
+
+				sound: 'sfx/v2/rifle.mp3',
+			},
+
+			{
+				damage: 20,
+				range: 600,
+				cooldown: 16,
+				damageType: ENUM.damageType.explosive,
+				targeting: ENUM.targeting.farthest,
+
+				splashRadius: 20,
+				missRadius: 150,
+				failureRate: 0.8,
+
+				animation: 'attack2',
+				fireOnKeyframe: 'fire',
+
+				sound: 'sfx/v2/artillery.mp3',
+
+				effect: {
+					type: 'projectile',
+					image: 'media/projectiles/riflegren.png',
+					arc: 2,
+					speed: 0.85,
+
+					offset: [22, 56 / 2],
+				},
+
+				impact: {
+					sprite: SPRITESHEETS.explosion2,
+					
+					sound: 'sfx/v2/fx_bomb1.mp3',
+					volume: 0.5,
+				},
+			},
+		],
 	},
 
 	'stormtrooper': {
@@ -161,6 +265,7 @@ const UnitStats = {
 		health: 30,
 		mobility: 50,
 		price: 60,
+		cooldown: 30,
 
 		spritesheets: {
 			move: {
@@ -200,11 +305,11 @@ const UnitStats = {
 			damage: 20,
 			penetration: -5,
 
-			range: 650,
-			scanRange: 500,
+			range: 550,
+			scanRange: 475,
 			cooldown: 6,
 			damageType: ENUM.damageType.piercing,
-			targeting: ENUM.targeting.farthest,
+			//targeting: ENUM.targeting.farthest,
 
 			animation: 'attack',
 			sound: 'sfx/v2/sniper.mp3',
@@ -225,9 +330,10 @@ const UnitStats = {
 		class: ENUM.class.infantry,
 		icon: 'media/icons/gunner.png',
 
-		health: 40,
+		health: 30,
 		mobility: 40,
 		price: 70,
+		cooldown: 35,
 
 		spritesheets: {
 			move: {
@@ -248,10 +354,10 @@ const UnitStats = {
 
 			attack: {
 				path: 'media/spritesheets/gunner/attack.png',
-				size: [7, 7],
-				frames: 44,
+				size: [7, 6],
+				frames: 39,
 
-				offset: [14, 0],
+				offset: [14 + 5, -3],
 			},
 
 			death: {
@@ -267,18 +373,13 @@ const UnitStats = {
 
 		attack: {
 			damage: 8,
-			scanRange: 300,
 			range: 375,
+			scanRange: 300,
 			cooldown: 0.4,
 			damageType: ENUM.damageType.piercing,
 
 			animation: 'attack',
 			sound: 'sfx/v2/smg.mp3',
-
-			// effect: {
-			// 	type: 'stroke',
-			// 	offset: [50, 30],
-			// },
 		},
 	},
 
@@ -288,12 +389,11 @@ const UnitStats = {
 
 		purchaseSound: 'sfx/s_26.ogg',
 
-		//entitiesOnDeath: ['rifleman'],
-
-		health: 70,
-		armor: 5,
+		health: 50,
+		armor: 6,
 		mobility: 160,
-		price: 150,
+		price: 125,
+		cooldown: 100,
 
 		shadow: [82, 14],
 
@@ -346,7 +446,8 @@ const UnitStats = {
 
 		health: 30,
 		mobility: 30,
-		price: 100,
+		price: 90,
+		cooldown: 40,
 
 		shadow: [60, 10],
 
@@ -428,12 +529,11 @@ const UnitStats = {
 
 		purchaseSound: 'sfx/s_26.ogg',
 
-		//entitiesOnDeath: ['stormtrooper'],
-
 		health: 125,
 		armor: 7,
 		mobility: 70,
-		price: 250,
+		price: 200,
+		cooldown: 100,
 
 		shadow: [82, 14],
 
@@ -507,7 +607,7 @@ const UnitStats = {
 		},
 	},
 
-	'armored artillery': {
+	'assault gun': {
 		class: ENUM.class.tank,
 		icon: 'media/icons/armart.png',
 
@@ -516,7 +616,8 @@ const UnitStats = {
 		health: 125,
 		armor: 7,
 		mobility: 65,
-		price: 400,
+		price: 300,
+		cooldown: 120,
 
 		shadow: [120, 20],
 
@@ -544,11 +645,19 @@ const UnitStats = {
 				size: [6, 6],
 				frames: 32,
 
-				offset: [21 + 10, -4],
+				offset: [10 + 23, -4 - 1],
 
 				keyframes: {
 					11: 'fire'
 				},
+			},
+
+			attack2: {
+				path: 'media/spritesheets/armart/attack-2.png',
+				size: [4, 3],
+				frames: 12,
+
+				offset: [10, -4],
 			},
 
 			death: {
@@ -560,35 +669,48 @@ const UnitStats = {
 			},
 		},
 
-		attack: {
-			damage: 25,
-			range: 1200,
-			scanRange: 600,
-			cooldown: 6,
-			damageType: ENUM.damageType.explosive,
-			targeting: ENUM.targeting.farthest,
+		attacks: [
+			{
+				damage: 25,
+				range: 1100,
+				scanRange: 600,
+				cooldown: 6,
+				damageType: ENUM.damageType.explosive,
+				targeting: ENUM.targeting.farthest,
 
-			splashRadius: 30,
-			missRadius: 100,
+				splashRadius: 30,
+				missRadius: 100,
 
-			animation: 'attack',
-			fireOnKeyframe: 'fire',
+				animation: 'attack',
+				fireOnKeyframe: 'fire',
 
-			sound: 'sfx/v2/artillery.mp3',
+				sound: 'sfx/v2/artillery.mp3',
 
-			effect: {
-				type: 'projectile',
-				image: 'media/projectiles/shell.png',
-				offset: [110 + 30, 75],
+				effect: {
+					type: 'projectile',
+					image: 'media/projectiles/shell.png',
+					offset: [110 + 30, 75],
+				},
+
+				impact: {
+					sprite: SPRITESHEETS.explosion2,
+					
+					sound: 'sfx/v2/fx_bomb1.mp3',
+					volume: 0.5,
+				},
 			},
 
-			impact: {
-				sprite: SPRITESHEETS.explosion2,
-				
-				sound: 'sfx/v2/fx_bomb1.mp3',
-				volume: 0.5,
-			},
-		},
+			{
+				damage: 8,
+				range: 350,
+				scanRange: 300,
+				cooldown: 0.4,
+				damageType: ENUM.damageType.piercing,
+
+				animation: 'attack2',
+				sound: 'sfx/v2/smg.mp3',
+			}
+		],
 	},
 
 	'transport truck': {
@@ -601,7 +723,8 @@ const UnitStats = {
 		health: 70,
 		armor: 2,
 		mobility: 210,
-		price: 100,
+		price: 90,
+		cooldown: 85,
 
 		shadow: [82, 14],
 
@@ -640,6 +763,7 @@ const DEFAULT_STATS_BASE = {
 	health: 1,
 	armor: 0,
 	mobility: 10,
+	cooldown: 3,
 	shadow: [24, 8],
 	deathOffset: [0, 0],
 	spritesheets: {},
@@ -660,6 +784,7 @@ const DEFAULT_STATS_ATTACK = {
 	range: 0,
 	cooldown: 9999,
 	targeting: ENUM.targeting.random,
+	failureRate: 0,
 
 	damageType: ENUM.damageType.piercing,
 	animation: 'attack',
@@ -674,8 +799,8 @@ const DEFAULT_SPRITE_SPLATTER = {
 };
 
 (() => {
-	for (const unitName in UnitStats) {
-		const baseStats = UnitStats[unitName];
+	for (const unitName in UNIT_STATS) {
+		const baseStats = UNIT_STATS[unitName];
 		baseStats.name = unitName;
 
 		FillMissingProperties(baseStats, DEFAULT_STATS_BASE);
@@ -689,11 +814,14 @@ const DEFAULT_SPRITE_SPLATTER = {
 		}
 		baseStats.spritesheets['splatter'] = deathSprite;
 
+		if ( baseStats.attacks === undefined ) {
+			baseStats.attacks = [baseStats.attack];
+		}
 
-		const attackStats = baseStats.attack;
+		baseStats.attacks.forEach(attackStats => {
+			FillMissingProperties(attackStats, DEFAULT_STATS_ATTACK);
+			attackStats.scanRange = attackStats.scanRange ?? attackStats.range;
+		});
 		// if ( attackStats === undefined ) continue;
-
-		FillMissingProperties(attackStats, DEFAULT_STATS_ATTACK);
-		attackStats.scanRange = attackStats.scanRange ?? attackStats.range;
 	}
 })();

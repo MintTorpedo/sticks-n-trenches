@@ -135,7 +135,7 @@ const LEVELS = [
 	{
 		title: 'Entrenched',
 		theme: 'default',
-		map: [0, 0, 0, 1, 0, 1, 0, 0, 0, 2, 0, 0, 2, 1, 0, 0, 2, 0, 0, 0, 1, 0, 0, 0],
+		map: [0, 0, 0, 1, 0, 1, 0, 0, 0, 2, 0, 0, 2, 1, 0, 0, 2, 0, 0, 0, 1, 0, 0, 0, 0],
 		soundtrack: 'track4',
 
 		player: {
@@ -164,7 +164,7 @@ const LEVELS = [
 				team: 'enemy',
 
 				traits: {
-					tileX: 14,
+					tileX: 12,
 					mobility: 0,
 				}
 			},
@@ -198,29 +198,39 @@ const LEVELS = [
 	},
 
 	{
-		title: 'Test',
+		title: 'Sandbox',
 		theme: 'default',
 		map: [3, 3, 3, 3, 0, 1, 0, 0, 1, 3, 3, 3, 3, 1, 1, 0, 0, 0, 2, 0, 0, 1, 0, 0, 2, 0, 0, 1, 0, 2, 2, 2, 2, 0, 1, 0, 0, 1, 0, 3, 3, 3, 3],
-		soundtrack: 'track3',
+		soundtrack: 'track4',
 
 		player: {
 			money: 170,
 			income: 1,
 
-			loadout: ['rifleman', 'sniper', 'gunner', 'artillery', 'transport truck'],
+			loadout: ['rifleman', 'sniper', 'gunner', 'artillery', 'transport truck', 'armored car', 'tank', 'assault gun'],
 		},
 
 		enemy: {
-			money: 40,
+			money: -20,
 
 			income: 0,
-			incomeFixed: 6,
-			loadout: ['stormtrooper', 'sniper', 'gunner', 'artillery'],
+			incomeFixed: 12,
+			loadout: ['stormtrooper', 'grenadier', 'sniper', 'gunner', 'artillery', 'transport truck', 'armored car', 'assault gun'],
 		},
+
+		// timed: [
+		// 	{
+		// 		spawn: ['grenadier'],
+		// 		team: 'player',
+		// 		traits: {
+		// 			tileX: 30,
+		// 		}
+		// 	}
+		// ],
 
 		interval: [
 			{
-				seconds: 60,
+				seconds: 100,
 				spawn: ['tank'],
 
 				team: 'enemy',

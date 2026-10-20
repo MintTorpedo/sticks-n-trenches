@@ -1,30 +1,35 @@
 class CGame {
 	constructor() {
 		this._callbacks = [];
-		this.isPaused = false;
 		this.previous = 0;
+		this._frameId = null;
 
 		this._nextFrame = this._nextFrame.bind(this);
 
-		window.onfocus = () => {
-			this.isPaused = false;
-			this.previous = performance.now();
-			requestAnimationFrame(this._nextFrame);
-		}
+		window.addEventListener('focus', () => this._resume());
+		window.addEventListener('blur', () => this._pause());
+		window.addEventListener('load', () => this._resume());
+	}
 
-		window.onblur = () => {
-			this.isPaused = true;
-		}
+	_resume() {
+		if ( this._frameId !== null ) return; // already running
 
-		window.onload = () => {
-			this._nextFrame(0);
-		}
+		this.previous = performance.now();
+		this._frameId = requestAnimationFrame(this._nextFrame);
+	}
+
+	_pause() {
+		if ( this._frameId === null ) return;
+
+		cancelAnimationFrame(this._frameId);
+		this._frameId = null;
 	}
 
 	_nextFrame(timestamp) {
-		if ( this.isPaused ) return;
+		// Schedule first, so an exception in a callback can't end the loop
+		this._frameId = requestAnimationFrame(this._nextFrame);
 
-		const elapsed = timestamp - this.previous;
+		const elapsed = Math.max(0, timestamp - this.previous);
 		this.previous = timestamp;
 
 		const deltaTime = elapsed / 1000;
@@ -32,8 +37,6 @@ class CGame {
 		for (let i = 0; i < this._callbacks.length; i++) {
 			this._callbacks[i](deltaTime);
 		}
-
-		requestAnimationFrame(this._nextFrame);
 	}
 
 	onTick(callback) {
@@ -42,43 +45,3 @@ class CGame {
 }
 
 const Game = new CGame();
-
-// const __updateCallbacks = [];
-// function GameOnUpdate(callback) {
-// 	__updateCallbacks.push(callback);
-// }
-
-// let __windowIsFocused = true;
-// window.onfocus = function() {
-// 	__windowIsFocused = true;
-// }
-
-// window.onblur = function() {
-// 	__windowIsFocused = false;
-// }
-
-// window.onload = function() {
-// 	const FPS = 1 / 20;
-// 	let accumulator = 0;
-// 	let previous = 0;
-
-// 	function main(timestamp) {
-// 		if ( !__windowIsFocused ) {
-// 			previous = timestamp;
-// 			return;
-// 		}
-
-// 		const elapsed = timestamp - previous;
-// 		previous = timestamp;
-
-// 		const deltaTime = elapsed / 1000;
-
-// 		for (let i = 0; i < __updateCallbacks.length; i++) {
-// 			__updateCallbacks[i](deltaTime);
-// 		}
-
-// 		requestAnimationFrame(main);
-// 	}
-
-// 	main(0);
-// }

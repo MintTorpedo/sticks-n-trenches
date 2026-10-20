@@ -17,13 +17,11 @@ class CEntity {
 		this.id = id;
 		this.player = player;
 
-		const baseStats = UnitStats[statName];
+		const baseStats = UNIT_STATS[statName];
 		this.stats = baseStats;
 		this.isInfantry = baseStats.class === ENUM.class.infantry;
 		
 		this.mobility = Randomize(baseStats.mobility, 0.2);
-		this.range = Randomize(baseStats.attack.range, 0.2);
-		this.scanRange = this.range / baseStats.attack.range * baseStats.attack.scanRange;
 		this.health = baseStats.health;
 
 		this.tileX = 0;
@@ -42,20 +40,39 @@ class CEntity {
 		this.y = 0;
 		this.z = Math.floor(zDiceroll * CONFIG.entity.zMovement);
 
-		this.cooldownScan = baseStats.attack.range === 0 && !baseStats.isTransport ? Infinity : 0;
-		this.cooldownAttack = 0;
 		this.action = ENUM.action.move;
-		this.target = null;
 
 		this.isDead = false;
 		this.isFullyDead = false; // Check for when death animation has completed
 		this.isInTrench = false;
-		this.isAttacking = false;
-		this.isTransport = this.stats.isTransport;
+		//this.isTransport = this.stats.isTransport;
 		this.isBeingLoaded = false;
 
 		this.passenger = null;
 		this.destination = 0;
+
+		this.attacks = [];
+		for (let i = 0; i < baseStats.attacks.length; i++) {
+			const attackStats = baseStats.attacks[i];
+			const maxRange = attackStats.range;
+			const range = Randomize(maxRange, 0.2);
+
+			this.attacks.push({
+				id: i,
+				stats: attackStats,
+				cooldown: 0,
+
+				range: range,
+				scanRange: range / maxRange * attackStats.scanRange,
+				target: null,
+			});
+		}
+
+		this.activeAttack = null;
+		this.scanCooldown = this.attacks[0].range === 0 ? Infinity : 0;
+
+		this.target = null; // To be deleted..
+		//this.cooldownAttack = 0;
 
 		const isFlipped = this.player.direction === ENUM.direction.left;
 
@@ -163,10 +180,8 @@ class CEntity {
 		});
 	}
 
-	takeDamage(entity) {
+	takeDamage(entity, weaponStats) {
 		if ( this.isDead ) return;
-
-		const weaponStats = entity.stats.attack;
 
 		let armor = this.stats.armor;
 		let penetration = weaponStats.penetration;
@@ -200,27 +215,21 @@ class CEntity {
 		}
 	}
 
-	_findNewTarget() {
+	_findNewTarget(attack) {
+		attack = attack ?? this.attacks[0];
+
+		const range = this.action === ENUM.action.move ? attack.scanRange : attack.range;
+		if ( range <= 0 ) return null;
+
 		const alliedPlayer = this.player;
 		const entities = [];
-
-		const range = this.action === ENUM.action.move ? this.scanRange : this.range;
 
 		this._entityManager.iterate(entity => {
 			if ( entity.isDead ) return;
 			if ( entity === this ) return;
 
-			if ( this.isTransport ) {
-				if ( entity.player !== alliedPlayer) return;
-				if ( !entity.isInfantry ) return;
-				if ( entity.isBeingLoaded ) return;
-				if ( entity.getTrenchDistance() < 300 ) return;
-				if ( entity.action !== ENUM.action.move ) return;
-
-			} else {
-				if ( entity.player === alliedPlayer) return;
-				if ( entity.distanceFrom(this) > range ) return;
-			}
+			if ( entity.player === alliedPlayer) return;
+			if ( entity.distanceFrom(this) > range ) return;
 
 			entities.push(entity);
 		});
@@ -245,74 +254,102 @@ class CEntity {
 		let nextAction = this.isInTrench ? 'idle' : 'move';
 		this.setAction(nextAction);
 
-		this.cooldownAttack = 0;
+		// for (let i = 0; i < this.attacks.length; i++) {
+		// 	this.attacks[i].cooldown = 0;
+		// }
 	}
 
-	_assignNewTarget() {
-		const prevTarget = this.target;
-		if ( prevTarget && !prevTarget.isDead ) return;
+	// _assignNewTarget(attack) {
+	// 	attack = attack ?? this.attacks[0];
 
-		this.target = this._findNewTarget();
-		if ( !this.target ) {
-			if ( this.action === ENUM.action.attack ) {
-				this._concludeAttack();
+	// 	const prevTarget = attack.target;
+	// 	if ( prevTarget && !prevTarget.isDead ) return;
+
+	// 	const target = this._findNewTarget(attack);
+	// 	attack.target = target;
+
+	// 	if ( !target ) {
+	// 		if ( this.action === ENUM.action.attack ) {
+	// 			this._concludeAttack();
+	// 		}
+
+	// 		return;
+	// 	}
+
+	// 	if ( this.action === ENUM.action.attack) return;
+	// 	this._attack(target, attack);
+	// }
+
+	_assignNewTarget() {
+		for (let i = 0; i < this.attacks.length; i++) {
+			const attack = this.attacks[i];
+			if ( attack.cooldown > 0 ) continue;
+
+			if ( !this._hasValidTarget(attack) ) {
+				attack.target = null;
+				//continue;
 			}
+
+			const target = this._findNewTarget(attack);
+			if ( !target ) continue;
+
+			attack.target = target;
+			this._attack(target, attack);
 
 			return;
 		}
 
-		if ( this.isTransport ) return;
+		if ( this.action === ENUM.action.attack ) {
+			this._concludeAttack();
+		}
+	}
 
-		if ( this.cooldownAttack === Infinity ) {
-			this.cooldownAttack = 0;
+	_attack(entity, attack) {
+		this.activeAttack = attack;
+
+		const weaponStats = attack.stats;
+		attack.cooldown = weaponStats.cooldown;
+
+		if ( weaponStats.failureRate < 1 ) {
+			const diceRoll = Math.random();
+
+			if ( weaponStats.failureRate > diceRoll ) {
+				this.activeAttack = null;
+				return;
+			}
 		}
 
-		if ( this.action === ENUM.action.attack) return;
-		this._attack(this.target);
-	}
-
-	getTrenchDistance() {
-		return Math.abs(this.player.stopAtTrenchX * TILE_WIDTH - this.x)
-	}
-
-	_attack(entity) {
-		this.isAttacking = true;
-
-		const animation = this.setAction('attack');
+		this.action = ENUM.action.attack;
+		const animation = this.animation.play(weaponStats.animation);
 		animation.on('completed', () => {
-			this.isAttacking = false;
-			if ( !entity.isDead ) return;
+			this.activeAttack = null;
 
-			this._assignNewTarget();
+			if ( this._hasValidTarget(attack) ) return;
+			attack.target = this._findNewTarget(attack);
 		});
-
-		const attackStats = this.stats.attack;
-		const cooldown = attackStats.cooldown;
-		const remaining = Math.abs(this.cooldownAttack) % cooldown;
-		this.cooldownAttack = cooldown - remaining;
 
 		const hit = (hitx, hity) => {
 			if ( !hitx ) {
-				entity.takeDamage(this);
+				entity.takeDamage(this, weaponStats);
 				return;
 			}
 
-			const radius = attackStats.splashRadius;
+			const radius = weaponStats.splashRadius;
 			if ( !radius ) return;
 
 			const hits = this._entityManager.getEntitiesWithin(hitx, hity, radius);
 			hits.forEach( entity => {
 				if ( entity.player === this.player ) return;
-				entity.takeDamage(this)
+				entity.takeDamage(this, weaponStats)
 			});
 		}
 
 		const fire = () => {
-			if ( attackStats.sound ) {
-				SoundPlayer.play(attackStats.sound);
+			if ( weaponStats.sound ) {
+				SoundPlayer.play(weaponStats.sound);
 			}
 
-			const effect = attackStats.effect;
+			const effect = weaponStats.effect;
 			if ( !effect ) return hit();
 
 			let [x0, y0] = this.getScreenPosition();
@@ -329,18 +366,20 @@ class CEntity {
 				return hit();
 			}
 			
-			const missRadius = attackStats.missRadius
+			const missRadius = weaponStats.missRadius
 			if ( missRadius ) {
 				x1 += missRadius / 2 - Math.random() * missRadius;
 			}
 
 			const projectile = this._projectiles.create(x0, y0, x1, y1);
 			projectile.setImage(effect.image);
-			projectile.setImpact(attackStats.impact);
+			projectile.setArcHeight(effect.arc);
+			projectile.setSpeed(effect.speed);
+			projectile.setImpact(weaponStats.impact);
 			projectile.on('completed', () => hit(x1, y1));
 		}
 
-		const keyframeName = attackStats.fireOnKeyframe;
+		const keyframeName = weaponStats.fireOnKeyframe;
 		if ( keyframeName ) {
 			animation.onKeyframe(keyframeName, fire);
 		} else {
@@ -348,28 +387,47 @@ class CEntity {
 		}
 	}
 
-	_updateAttack(dt) {
-		this.cooldownAttack -= dt;
-		if ( this.cooldownAttack > 0 ) return;
+	_hasValidTarget(attack) {
+		const target = attack.target;
+		if ( !target || target.isDead ) return false;
 
-		if ( this.target.isDead ) {
-			const target = this._findNewTarget();
+		const range = attack.range;
+		return range >= this.distanceFrom(target);
+	}
 
-			if ( this.isAttacking && !target ) {
-				this.cooldownAttack = Infinity;
-				return;
+	_updateAttack() {
+		for (let i = 0; i < this.attacks.length; i++) {
+			const attack = this.attacks[i];
+
+			if ( attack.cooldown > 0 ) continue;
+			if ( this.activeAttack && this.activeAttack !== attack) continue;
+
+			let target = attack.target;
+			if ( !this._hasValidTarget(attack) ) {
+				target = this._findNewTarget(attack);
+
+				if ( !target ) {
+					//attack.cooldown = CONFIG.entity.scanCooldown;
+					continue;
+				}
+
+				attack.target = target;
 			}
 
-			if ( target ) {
-				this.target = target;
-			} else {
-				this._concludeAttack();
-			}
-
-			return;
+			this._attack(target, attack);
 		}
 
-		this._attack(this.target);
+		if ( this.activeAttack ) return;
+		if ( this.attacks[0].cooldown > 0 ) return;
+
+		this._concludeAttack();
+	}
+
+	_updateCooldown(dt) {
+		for (let i = 0; i < this.attacks.length; i++) {
+			const attack = this.attacks[i];
+			attack.cooldown = Math.max(0, attack.cooldown - dt);
+		}
 	}
 
 	exitTrench() {
@@ -397,83 +455,13 @@ class CEntity {
 		
 		this.player.reportTrenchCapture(tx);
 	}
-	_setLookDirection(targetX) {
-		const direction = Math.sign(targetX - this.x);
-		this.animation.setDirection(direction);
-	}
 
-	_getTrenchDestination() {
-		const trenchX = this.player.stopAtTrenchX * TILE_WIDTH;
-		return trenchX - CONFIG.entity.unloadDistance * this.player.direction;
-	}
-
-	updateTrenchDestination() {
-		const destination = this._getTrenchDestination();
-		this.destination = destination;
-		this._setLookDirection(destination);
-	}
-
-	_transport(target) {
-		target.isDead = true;
-		target.setPosition(-1000);
-
-		this.passenger = target;
-		this.action = ENUM.action.transporting;
-		this.target = null;
-
-		this.updateTrenchDestination();
-		this.setAction('transporting');
-	}
-
-	_unload() {
-		const target = this.passenger;
-		target.isDead = false;
-		target.isInTrench = false;
-		target.isBeingLoaded = false;
-		target.setPosition(this.x);
-		target.setAction('move');
-
-		this.passenger = null;
-		this.setAction('idle');
-	}
-
-	_getDirectionTransport() {
-		let direction = 0;
-
-		let targetX = this.destination;
-		if ( !this.passenger ) {
-			const target = this.target;
-
-			if ( !target || target.isDead) {
-				this.target = null;
-				this.setAction('idle');
-				return 0;
-			}
-
-			targetX = this.target.x;
-		}
-
-		const diff = targetX - this.x;
-		direction = Math.sign(diff);
-
-		if ( Math.abs(diff) > CONFIG.entity.loadDistance ) return direction;
-
-		if ( this.passenger ) {
-			this._unload();
-		} else {
-			this._transport(this.target);
-		}
-
-		return 0;
+	getDistanceFromTrench() {
+		return Math.abs(this.player.stopAtTrenchX * TILE_WIDTH - this.x)
 	}
 
 	_updateMove(dt) {
 		let direction = this.player.direction;
-
-		if ( this.isTransport ) {
-			direction = this._getDirectionTransport();
-		}
-
 		this.x += dt * this.mobility * this.speedModifier * direction;
 
 		// const x = this.x;
@@ -510,22 +498,170 @@ class CEntity {
 	}
 
 	_scanTargets(dt) {
-		this.cooldownScan -= dt;
+		this.scanCooldown -= dt;
+		if ( this.scanCooldown > 0 ) return;
 
-		if ( this.cooldownScan > 0 ) return;
-		this.cooldownScan = CONFIG.entity.cooldownScan;
-
+		this.scanCooldown = CONFIG.entity.scanCooldown;
 		this._assignNewTarget();
+	}
 
-		if ( !this.isTransport ) return;
-		this.cooldownScan *= 5;
+	update(dt) {
+		if ( this.isDead ) return;
 
-		const target = this.target;
-		if ( !target ) {
-			this.setAction('idle');
+		this._updateCooldown(dt);
+
+		if ( this.action === ENUM.action.move ) {
+			this._updateMove(dt);
+
+		} else if ( this.action === ENUM.action.attack ) {
+			this._updateAttack(dt);
 			return;
 		}
 
+		if ( this.action === ENUM.action.move || this.action === ENUM.action.idle ) {
+			this._scanTargets(dt);
+		}
+	}
+
+	draw(ctx) {
+		const [x, y] = this.getScreenPosition();
+		this.animation.draw(ctx, x, y);
+	}
+}
+
+
+class CEntityTransport extends CEntity {
+	constructor(gameSession, id, statName, player) {
+		super(gameSession, id, statName, player);
+
+		this.target = null;
+		this.destination = null;
+		this.scanCooldown = 0;
+
+		delete this.attacks;
+		delete this.activeAttack;
+
+		//console.log(this);
+
+		this.setAction('idle');
+	}
+
+	_setLookDirection(targetX) {
+		const direction = Math.sign(targetX - this.x);
+		this.animation.setDirection(direction);
+	}
+
+	_getTrenchPosition() {
+		return this.player.stopAtTrenchX * TILE_WIDTH;
+	}
+
+	refreshTrenchDestination() {
+		const destination = this._getTrenchPosition() - TILE_WIDTH * 1.5 * this.player.direction;
+		this.destination = destination;
+		this._setLookDirection(destination);
+	}
+
+	_transport(target) {
+		target.isDead = true;
+		target.setPosition(-1000);
+
+		this.passenger = target;
+		this.target = null;
+
+		this.refreshTrenchDestination();
+		this.setAction('transporting');
+	}
+
+	_unload() {
+		const target = this.passenger;
+		target.isDead = false;
+		target.isInTrench = false;
+		target.isBeingLoaded = false;
+		target.setPosition(this.x);
+		target.setAction('move');
+
+		this.passenger = null;
+		this.setAction('idle');
+	}
+
+	_verifyTarget() {
+		const target = this.target;
+		if ( !target || target.isDead ) {
+			this.target = null;
+			this.setAction('idle');
+
+			return;
+		}
+
+		this.destination = target.x;
+	}
+
+	_verifyDestination() {
+		const distance = Math.abs(this.destination - this.x);
+		if ( distance > CONFIG.entity.loadDistance ) return;
+
+		if ( this.passenger ) {
+			this._unload();
+		} else {
+			this._transport(this.target);
+		}
+
+		//console.log('Destination reached !!!', distance, this);
+	}
+
+	_updateMove(dt) {
+		let direction = Math.sign(this.destination - this.x);
+		this.x += dt * this.mobility * this.speedModifier * direction;
+
+		const tx = Math.floor(this.x / TILE_WIDTH);
+		if (this.tileX === tx) return;
+
+		this.tileX = tx;
+
+		const terrain = this._map.getTerrainAt(tx);
+		if ( !terrain ) return;
+
+		this.terrain = terrain;
+		this.speedModifier = this.terrain.speed[ this.stats.class ];
+	}
+
+	_findNewTarget() {
+		const alliedPlayer = this.player;
+		const entities = [];
+
+		this._entityManager.iterate(entity => {
+			if ( entity.isDead ) return;
+			if ( entity === this ) return;
+
+			if ( entity.player !== alliedPlayer) return;
+			if ( !entity.isInfantry ) return;
+			if ( entity.isBeingLoaded ) return;
+			if ( entity.getDistanceFromTrench() < 300 ) return;
+			if ( entity.action !== ENUM.action.move ) return;
+
+			entities.push(entity);
+		});
+
+		const length = entities.length;
+		if (length === 0) return null;
+		if (length === 1) return entities[0];
+
+		return targetFarthestTrench(this, entities);
+	}
+
+	_scanTargets(dt) {
+		this.scanCooldown -= dt;
+		if ( this.scanCooldown > 0 ) return;
+
+		this.scanCooldown = CONFIG.entity.scanTransportCooldown;
+
+		//console.log('scanning !!', this);
+		//console.trace();
+
+		const target = this._findNewTarget();
+		if ( !target ) return;
+
+		this.target = target;
 		target.isBeingLoaded = true;
 
 		const direction = Math.sign(target.x - this.x);
@@ -536,23 +672,16 @@ class CEntity {
 	update(dt) {
 		if ( this.isDead ) return;
 
-		if ( this.action === ENUM.action.move ) {
-			this._updateMove(dt);
-
-		} else if ( this.action === ENUM.action.attack ) {
-			this._updateAttack(dt);
-			return;
-
-		} else if ( this.action === ENUM.action.transporting ) {
-			this._updateMove(dt);
+		if ( this.action === ENUM.action.idle ) {
+			this._scanTargets(dt);
 			return;
 		}
 
-		this._scanTargets(dt);
-	}
-
-	draw(ctx) {
-		const [x, y] = this.getScreenPosition();
-		this.animation.draw(ctx, x, y);
+		if ( this.action === ENUM.action.move ) {
+			this._verifyTarget();
+		}
+		
+		this._updateMove(dt);
+		this._verifyDestination();
 	}
 }

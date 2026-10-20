@@ -3,7 +3,9 @@ const CONFIG = {
 }
 
 CONFIG.entity = {
-	cooldownScan: 0.3, // seconds
+	scanCooldown: 0.3, // seconds
+	scanTransportCooldown: 1.5,
+
 	zMovement: 50, // pixels
 	trenchDefence: 0.2,
 	moneyDeathRatio: 0.2,

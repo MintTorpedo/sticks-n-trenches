@@ -76,5 +76,5 @@ const Soundtrack = new CSoundtrackManager({
 	'track2': { path: 'soundtrack/bgm3.ogg', volume: 0.75 },
 	'track3': { path: 'soundtrack/bgm4.ogg', volume: 0.75 },
 	'track4': { path: 'soundtrack/bgm5.ogg', volume: 0.75 },
-	'victory': {path: 'soundtrack/gameclear.mp3', volume: 0.75, looped: false},
+	'victory': {path: 'soundtrack/gameclear.mp3', volume: 0.6, looped: false},
 });

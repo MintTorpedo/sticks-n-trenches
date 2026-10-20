@@ -44,6 +44,20 @@ class CProjectile {
 		this.impact = impactData;
 	}
 
+	setArcHeight(ratio) {
+		if ( !ratio ) return;
+		this.arcHeight *= ratio;
+
+		this._setupArc();
+		this._updateDuration();
+	}
+
+	setSpeed(ratio) {
+		if ( !ratio ) return;
+		this.speed *= ratio;
+		this._updateDuration();
+	}
+
 	on(eventName, callback) {
 		this._event.on(eventName, callback);
 	}
@@ -101,18 +115,6 @@ class CProjectile {
 		const arcLength = Math.abs(this.radius * this.angleDelta);
 
 		this.duration = arcLength / this.speed;
-	}
-
-	setHeight(arcHeight) {
-		this.arcHeight = arcHeight;
-
-		this._setupArc();
-		this._updateDuration();
-	}
-
-	setSpesed(speed) {
-		this.speed = speed;
-		this._updateDuration();
 	}
 
 	update(dt) {

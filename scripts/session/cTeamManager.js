@@ -11,7 +11,7 @@ class CPlayer {
 		this.incomePerTrench = 1;
 		this.incomeFixed = 1;
 
-		this.loadout = [];
+		this.loadout = new CLoadout();
 
 		this.stopAtTrenchX = 0;
 		this.flag = null;
@@ -46,7 +46,7 @@ class CPlayer {
 
 		this._entityManager.iterateByPlayer(this, entity => {
 			if (entity.passenger) {
-				entity.updateTrenchDestination();
+				entity.refreshTrenchDestination();
 			}
 
 			entity.exitTrench();
@@ -72,16 +72,19 @@ class CPlayer {
 	}
 
 	produceEntity(unitName) {
-		if ( !this.loadout.includes(unitName) ) return console.log(`"${unitName}" does not exist in loadout`);
+		const loadout = this.loadout;
+		const baseStats = loadout.get(unitName);
+		if ( !baseStats ) return; //console.log(`"${unitName}" does not exist in loadout`);
 
-		const baseStats = UnitStats[unitName]
-		if ( !baseStats ) return console.log(`${unitName} is not a valid unit`);
+		if ( loadout.isOnCooldown(unitName) ) return; //console.log(`"${unitName}" is on cooldown`);
 
 		const newMoney = this.money - baseStats.price;
-		if ( newMoney <= 0 ) return console.log('Too expensive');
+		if ( newMoney <= 0 ) return; //console.log('Too expensive');
 
 		const entity = this.createEntity(unitName);
 		this.money = newMoney;
+		
+		loadout.applyCooldown(unitName);
 
 		return entity;
 	}
@@ -91,7 +94,7 @@ class CPlayer {
 	}
 
 	setLoadout(list) {
-		this.loadout = [...list];
+		this.loadout = new CLoadout(list);
 	}
 
 	setMoney(value) {

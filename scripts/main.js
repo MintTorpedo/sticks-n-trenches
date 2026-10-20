@@ -1,4 +1,4 @@
-import { onSlotClicked, generateSlots, onDirectionClicked, updateMoneyLabel, onDifficulty, onLevel, showWinScreen, onUserInteracted } from './slots.js'
+import { onSlotClicked, generateSlots, slotApplyCooldown, onDirectionClicked, updateMoneyLabel, onDifficulty, onLevel, showWinScreen, onUserInteracted } from './slots.js'
 
 const canvas = CanvasManager.create('#canv-main');
 const ctx = canvas.graphics;
@@ -20,15 +20,15 @@ onDirectionClicked(function(direction) {
 });
 
 onSlotClicked(function(baseStats) {
-	gameSession.inputPurchase(baseStats);
-	//gameSession.playSoundtrack();
+	const success = gameSession.inputPurchase(baseStats);
+	if ( !success ) return;
 
-	//hasInteracted = true;
+	slotApplyCooldown(baseStats.name);
 });
 
 onDifficulty(function(difficulty) {
 	gameSession.inputDifficulty(difficulty);
-	console.log('New enemy difficulty:', difficulty);
+	//console.log('New enemy difficulty:', difficulty);
 });
 
 onLevel(function(levelId) {
@@ -47,7 +47,7 @@ onLevel(function(levelId) {
 		Soundtrack.play('victory');
 	});
 
-	console.log(gameSession);
+	//console.log(gameSession);
 
 	showWinScreen(false);
 	generateSlots(gameSession.player.loadout);

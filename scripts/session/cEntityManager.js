@@ -7,8 +7,16 @@ class CEntityManager {
 	}
 
 	create(statName, player) {
+		const baseStats = UNIT_STATS[statName];
+		if ( !baseStats ) return console.warn(`Invalid unit name "${statName}"`);
+
 		const entityId = ++this.counter;
-		const entity = new CEntity(this._game, entityId, statName, player);
+		let entity;
+		if ( baseStats.isTransport ) {
+			entity = new CEntityTransport(this._game, entityId, statName, player);
+		} else {
+			entity = new CEntity(this._game, entityId, statName, player);
+		}
 
 		const index = this.getEntityOrderIndex(entity);
 		this.entities.splice(index, 0, entity);
